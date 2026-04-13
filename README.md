@@ -56,7 +56,7 @@
 ## 📣 Latest News
 
 - **[Jan 26, 2026]**: 🎉 Our paper **[Agentic Reinforced Policy Optimization](https://arxiv.org/abs/2507.19849)** has been accepted at ICLR 2026!
-- **[Jan 20, 2026]**: 🎉 Our paper **[Agentic Entropy-Balanced Policy Optimization](https://arxiv.org/abs/2510.14545)** has been accepted at WWW 2026!
+- **[Jan 20, 2026]**: 🎉 Our paper **[Agentic Entropy-Balanced Policy Optimization](https://arxiv.org/abs/2510.14545)** has been accepted at WWW 2026 (Oral)!
 - **[Dec 20, 2025]**: 🚀🚀🚀 We released **[AEPO-32B](https://huggingface.co/dongguanting/QwQ-32B-AEPO-DeepSearch)** and **[ARPO-32B](https://huggingface.co/dongguanting/QwQ-32B-ARPO-DeepSearch)** (based on **QwQ-32B**), achieving **53.4/12.8** and **51.5/11.2** on **GAIA/HLE**.
 - **[Nov 03, 2025]**: The brief introduction of AEPO can be found on a series of platforms like **[X](https://x.com/_akhaliq/status/1979203620244447248), [WeChat](https://mp.weixin.qq.com/s/mL3CTNonZVoLWnQVfK7KAw)**.
 - **[Oct 17, 2025]**: 📄 Our AEPO paper is now available on **[arXiv](https://arxiv.org/abs/2510.14545)** and **[Hugging Face](https://huggingface.co/papers/2510.14545)** daily paper.
