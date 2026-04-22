@@ -147,7 +147,7 @@ class vLLMRollout(BaseRollout):
         #    (which can vary across different vLLM versions);
         # - Otherwise it's the desired value we want to explicitly set.
         engine_kwargs = {key: val for key, val in engine_kwargs.items() if val is not None}
-        self.inference_engine = LLM(
+        llm_kwargs = dict(
             model=model_path,
             enable_sleep_mode=True,
             tensor_parallel_size=tensor_parallel_size,
@@ -157,7 +157,6 @@ class vLLMRollout(BaseRollout):
             gpu_memory_utilization=config.gpu_memory_utilization,
             disable_custom_all_reduce=True,
             disable_mm_preprocessor_cache=True,
-            limit_mm_per_prompt=limit_mm_per_prompt,
             skip_tokenizer_init=False,
             max_model_len=max_model_len,
             load_format=load_format,
@@ -170,6 +169,11 @@ class vLLMRollout(BaseRollout):
             **lora_kwargs,
             **engine_kwargs,
         )
+        # vLLM validates this field as Dict in some versions; don't pass None.
+        if limit_mm_per_prompt is not None:
+            llm_kwargs["limit_mm_per_prompt"] = limit_mm_per_prompt
+
+        self.inference_engine = LLM(**llm_kwargs)
 
         # Offload vllm model to reduce peak memory usage
         self.inference_engine.sleep(level=1)

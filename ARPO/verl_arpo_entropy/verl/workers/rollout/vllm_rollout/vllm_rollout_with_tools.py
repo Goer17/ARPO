@@ -121,7 +121,8 @@ class vLLMRolloutWithTools(vLLMRollout):
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=self.max_tool_workers)
 
     def __del__(self):
-        self.executor.shutdown(wait=False)
+        if hasattr(self, "executor"):
+            self.executor.shutdown(wait=False)
 
     def _extract_content(self, text: str, tag: str) -> str:
         """Extracts content from within the last <tag>...</tag> block."""

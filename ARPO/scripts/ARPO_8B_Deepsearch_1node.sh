@@ -3,6 +3,8 @@ PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$PARENT_DIR"
 echo "Switched to parent directory: $PARENT_DIR"
 
+export ARPO_PATH="$PARENT_DIR"
+export CKPT_PATH="/mnt/workspace/lyy/ckpts"
 
 # ============================ Environment Setup ============================
 # Set basic environment variables
@@ -14,19 +16,24 @@ export MKL_SERVICE_FORCE_INTEL=1
 export MKL_THREADING_LAYER=GNU       
 export RAY_memory_usage_threshold=0.8  
 export RAY_memory_monitor_refresh_ms=0 
+export NCCL_NVLS_ENABLE=0
+export NCCL_CUMEM_ENABLE=0
 
 
 # Set Python path
-export PYTHONPATH="<your_path_to_ARPO>"/verl_arpo_entropy:$PYTHONPATH
+export PYTHONPATH=$ARPO_PATH/verl_arpo_entropy:$PYTHONPATH
 
 # ============================ Basic Configuration ============================
 # Experiment name and project
 PROJECT_NAME="deep_research"
-EXPERIMENT_NAME="qwen3_sft5.4w_global_16_init_8_beam_2_random_0.5_SDS_8B"
+EXPERIMENT_NAME="qwen3.4w_global_16_init_8_beam_2_random_0.5_SDS_8B"
 
 # Configuration file path
-CONFIG_PATH="<your_path_to_ARPO>/scripts/config" # Modify the absolute path of the config folder, relative path is not recommended
+CONFIG_PATH="$ARPO_PATH/scripts/config" # Modify the absolute path of the config folder, relative path is not recommended
 CONFIG_NAME="ppo_trainer_dr.yaml"
+
+# Optional switches
+ENABLE_MULTI_TURN=${ENABLE_MULTI_TURN:-False}
 
 # Distributed training settings
 NNODES=1                            
@@ -41,12 +48,12 @@ MAX_PROMPT_LENGTH=2000              # Maximum prompt length
 MAX_RESPONSE_LENGTH=10000           # Maximum response length
 
 # Data file paths
-TRAIN_FILES="<your_path_to_ARPO>/rl_datasets/hard_search_1k.parquet"
-VALID_FILES=["<your_path_to_ARPO>/rl_datasets/gaia_test.parquet","<your_path_to_ARPO>/rl_datasets/hle_test.parquet"]
+TRAIN_FILES="$ARPO_PATH/rl_datasets/hard_search_1k.parquet"
+VALID_FILES=["$ARPO_PATH/rl_datasets/gaia_test.parquet","$ARPO_PATH/rl_datasets/hle_test.parquet"]
 
 # ============================ Model Configuration ============================
 # Actor model path
-ACTOR_MODEL_PATH="<your_8B_model_path>" # Modify training model path
+ACTOR_MODEL_PATH="/mnt/workspace/conversational_ai/OpenModels/Qwen3/Qwen3-8B" # Modify training model path
 
 # ============================ Rollout Configuration ==========================
 # Rollout settings
@@ -58,12 +65,12 @@ BEAM_SIZE=2                        # Beam size
 BRANCH_PROBABILITY=0.5             # Branch probability
 Entropy_weight=0.2
 # ============================ Rollout Tools Configuration ==========================
-SEARCH_CACHE_PATH="<your_path_to_ARPO>/search_cache/search_cache.json" # Modify
+SEARCH_CACHE_PATH="$ARPO_PATH/search_cache/search_cache.json" # Modify
 
 # ============================ Reward Model Configuration ==========================
 # Reward model settings
 REWARD_MANAGER="naive"              # Reward manager type
-CUSTOM_REWARD_FUNCTION_PATH="<your_path_to_ARPO>/verl_arpo_entropy/verl/utils/reward_score/deep_research.py"
+CUSTOM_REWARD_FUNCTION_PATH="$ARPO_PATH/verl_arpo_entropy/verl/utils/reward_score/deep_research.py"
 CUSTOM_REWARD_FUNCTION_NAME="compute_score"
 
 # ============================ Training Configuration ============================
@@ -74,17 +81,17 @@ TEST_FREQ=5                        # Test frequency
 
 # ============================ Path Configuration ============================
 # Save path
-SAVE_PATH="<your_checkpoint_save_dir>/rl/${EXPERIMENT_NAME}"
-ROLLOUT_SAVE_PATH="${SAVE_PATH}/rollout"
+SAVE_PATH="$CKPT_PATH/rl/${EXPERIMENT_NAME}"
+ROLLOUT_SAVE_PATH="$CKPT_PATH/rollout"
 
 # ============================ WandB Configuration ============================
 # WandB settings
-WANDB_API_KEY="<your_wandb_key>" # Modify your wandb key
+export WANDB_API_KEY="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" # Modify your wandb key
 
 # ============================ Preparation ============================
 # Login to WandB (if API key is provided)
 if [ "$WANDB_API_KEY" != "" ]; then
-    wandb login --relogin $WANDB_API_KEY
+    # wandb login --relogin $WANDB_API_KEY
     export WANDB_DIR=${SAVE_PATH}
 fi
 
