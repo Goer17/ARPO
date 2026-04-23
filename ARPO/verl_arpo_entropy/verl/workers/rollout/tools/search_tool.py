@@ -476,6 +476,38 @@ class BingSearchTool(BaseTool):
         
         return "\n".join(formatted)
 
+from coral.client.rtp_client import RtpClient
+from datetime import datetime
+
+class GoogleSearchTool(BaseTool):
+    """Google search tool that provides web search capability with caching."""
+    def __init__(self, domain: str) -> None:
+        self.domain = domain
+        self.client = RtpClient(domain)
+    
+    @property
+    def name(self):
+        return "google_search"
+    
+    @property
+    def trigger_tag(self) -> str:
+        return "search"
+    
+    def execute(self, content: str, **kwargs) -> str:
+        now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_000")
+
+        input_data = {
+            "job_name": "arpo_deepsearch_exp",
+            "enable_cache": True,
+            "api_name": "google_search",
+            "backend": "aib",
+            "request_id": now,
+            "querys": [content]
+        }
+
+        response = self.client.process(input_data, path="/", timeout_ms=200000)
+
+        return json.dumps(response, ensure_ascii=False, indent=2)
 
 if __name__ == "__main__":
     import sys
