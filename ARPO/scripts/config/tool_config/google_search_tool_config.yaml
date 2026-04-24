@@ -1,0 +1,20 @@
+tools:
+  - class_name: verl.tools.google_search_tool.GoogleSearchTool
+    config:
+      domain: aidc.aibusiness.llmops.agent_tools.vipserver
+      job_name: arpo_deepsearch_exp
+      backend: aib
+      timeout_ms: 200000
+    tool_schema:
+      type: function
+      function:
+        name: search
+        description: Searches the web for relevant information based on the given query list.
+        parameters:
+          type: object
+          properties:
+            query_list:
+              type: array
+              description: A list of search queries.
+          required:
+            - query_list

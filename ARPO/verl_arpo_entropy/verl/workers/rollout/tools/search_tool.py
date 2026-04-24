@@ -10,7 +10,10 @@ import requests
 from typing import Optional, Union, Dict, List, Any
 from urllib.parse import urlencode
 
-import langid
+try:
+    import langid
+except ImportError:
+    langid = None
 
 from verl.workers.rollout.tools.base_tool import BaseTool
 
@@ -343,10 +346,15 @@ class BingSearchTool(BaseTool):
         Returns:
             API response object
         """
-        # Determine language settings based on query language
-        lang_code, lang_confidence = langid.classify(query)
-        if lang_code == 'zh':
-            mkt, setLang = "zh-CN", "zh"
+        # Determine language settings based on query language.
+        # `langid` is only needed for Bing mode; keep a safe fallback so
+        # GoogleSearchTool can still load when langid is not installed.
+        if langid is not None:
+            lang_code, _ = langid.classify(query)
+            if lang_code == 'zh':
+                mkt, setLang = "zh-CN", "zh"
+            else:
+                mkt, setLang = "en-US", "en"
         else:
             mkt, setLang = "en-US", "en"
         
@@ -541,4 +549,3 @@ if __name__ == "__main__":
     result2 = search_tool.execute(query)
     print("\nSearch results:\n")
     print(result2)
-

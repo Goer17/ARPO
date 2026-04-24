@@ -26,14 +26,14 @@ export PYTHONPATH=$ARPO_PATH/verl_arpo_entropy:$PYTHONPATH
 # ============================ Basic Configuration ============================
 # Experiment name and project
 PROJECT_NAME="deep_research"
-EXPERIMENT_NAME="qwen3.arpo.4w_global_16_init_8_beam_2_random_0.5_SDS_8B"
+EXPERIMENT_NAME="qwen3.grpo"
 
 # Configuration file path
 CONFIG_PATH="$ARPO_PATH/scripts/config" # Modify the absolute path of the config folder, relative path is not recommended
 CONFIG_NAME="ppo_trainer_dr.yaml"
 
 # Optional switches
-ENABLE_MULTI_TURN=${ENABLE_MULTI_TURN:-False}
+ENABLE_MULTI_TURN=${ENABLE_MULTI_TURN:-True}
 
 # Distributed training settings
 NNODES=1                            
@@ -57,16 +57,14 @@ ACTOR_MODEL_PATH="/mnt/workspace/conversational_ai/OpenModels/Qwen3/Qwen3-8B" # 
 
 # ============================ Rollout Configuration ==========================
 # Rollout settings
-ROLLOUT_NAME="vllm"                 # Use vllm engine
-ROLLOUT_MODE="sync_with_tool"       # Synchronous mode with tool support
+ROLLOUT_NAME="sglang"               # Use sglang engine for GRPO + tool
+ROLLOUT_MODE="sync"                 # Default GRPO rollout mode
 ROLLOUT_N=16                         # Number of responses generated per sample
 INITIAL_ROLLOUTS=8                 # Initial rollout number
 BEAM_SIZE=2                        # Beam size
 BRANCH_PROBABILITY=0.5             # Branch probability
 Entropy_weight=0.2
-# ============================ Rollout Tools Configuration ==========================
-GOOGLE_SEARCH_DOMAIN="aidc.aibusiness.llmops.agent_tools.vipserver"
-
+TOOL_CONFIG_PATH="$ARPO_PATH/scripts/config/tool_config/google_search_tool_config.yaml"
 # ============================ Reward Model Configuration ==========================
 # Reward model settings
 REWARD_MANAGER="naive"              # Reward manager type
@@ -106,7 +104,6 @@ if [ ! -d "$ROLLOUT_SAVE_PATH" ]; then
 fi
 
 
-
 # ============================ Start Training ============================
 python3 -m verl.trainer.main_ppo \
     --config-path=$CONFIG_PATH \
@@ -119,6 +116,7 @@ python3 -m verl.trainer.main_ppo \
     data.train_batch_size=${TRAIN_BATCH_SIZE} \
     data.max_prompt_length=${MAX_PROMPT_LENGTH} \
     data.max_response_length=${MAX_RESPONSE_LENGTH} \
+    data.return_raw_chat=True \
     actor_rollout_ref.model.path=${ACTOR_MODEL_PATH} \
     actor_rollout_ref.model.enable_gradient_checkpointing=True \
     actor_rollout_ref.model.use_remove_padding=True \
@@ -137,13 +135,9 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.mode=${ROLLOUT_MODE} \
     actor_rollout_ref.rollout.gpu_memory_utilization=0.6 \
     actor_rollout_ref.rollout.n=${ROLLOUT_N} \
-    actor_rollout_ref.rollout.initial_rollouts=${INITIAL_ROLLOUTS} \
-    actor_rollout_ref.rollout.beam_size=${BEAM_SIZE} \
-    actor_rollout_ref.rollout.branch_probability=${BRANCH_PROBABILITY} \
-    actor_rollout_ref.rollout.entropy_weight=${Entropy_weight} \
-    ++actor_rollout_ref.rollout.tools.tool_instances.search.class_path=verl.workers.rollout.tools.search_tool.GoogleSearchTool \
-    ++actor_rollout_ref.rollout.tools.tool_instances.search.params.domain=${GOOGLE_SEARCH_DOMAIN} \
     actor_rollout_ref.rollout.multi_turn.enable=${ENABLE_MULTI_TURN} \
+    actor_rollout_ref.rollout.multi_turn.format=qwen \
+    actor_rollout_ref.rollout.multi_turn.tool_config_path=${TOOL_CONFIG_PATH} \
     actor_rollout_ref.ref.log_prob_max_token_len_per_gpu=$((4*(MAX_PROMPT_LENGTH+MAX_RESPONSE_LENGTH))) \
     actor_rollout_ref.ref.fsdp_config.param_offload=True \
     reward_model.reward_manager=${REWARD_MANAGER} \
